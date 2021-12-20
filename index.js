@@ -82,8 +82,14 @@ var playerInformation = {
     }
 }
 // thu hoạch cây
-async function harvestPlan() {
-
+async function harvestPlan(landId ) {
+    var response = await axios.post("b2/getDataPlantCare",{landId: landId, seedId: null});
+    if(response.status == 200){
+        //102 trong 105 thu hoach 104 tuoi nuoc
+        console.log("success "+landId);
+    }else{
+        console.log("error "+landId);
+    }
 }
 //thu hoạch trứng gà
 async function harvestChicken() {
@@ -94,20 +100,38 @@ async function harvestDuck() {
 
 }
 //trồng cây
-async function plantTree() {
-
+async function plantTree(landId , seedId) {
+    var response = await axios.post("b2/getDataPlantCare",{landId: landId, seedId: seedId});
+    if(response.status == 200){
+        //102 trong 105 thu hoach 104 tuoi nuoc
+        console.log("success "+landId);
+    }else{
+        console.log("error "+landId);
+    }
 }
 //mua cây
-async function buyTre(type, quantity) {
-
+async function buyTre(id, quantity) {
+    var response = await axios.post("b2/buyTree",{id: itemBuy.id,quantity: 1});
+    if(response.status == 200){
+        //102 trong 105 thu hoach 104 tuoi nuoc
+        console.log("success "+landId);
+    }else{
+        console.log("error "+landId);
+    }
 }
 //mua pet
-async function butAnimal(type, quantity) {
+async function buyAnimal(type, quantity) {
 
 }
 //bán các loại cây và quả 
-async function sellAll(type, quantity) {
-
+async function sellAll(id, quantity) {
+    var response = await axios.post("b1/sellTree",{id: id, quantity: quantity});
+    if(response.status == 200){
+        //102 trong 105 thu hoach 104 tuoi nuoc
+        console.log("success "+landId);
+    }else{
+        console.log("error "+landId);
+    }
 }
 async function main() {
     const login = await axios.post('https://api.happyland.finance/api/b1/login', {msisdn: userInfor.name, password: userInfor.pass})
