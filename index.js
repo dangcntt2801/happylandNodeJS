@@ -83,7 +83,7 @@ var playerInformation = {
 }
 // thu hoạch cây
 async function harvestPlan(landId ) {
-    var response = await axios.post("b2/getDataPlantCare",{landId: landId, seedId: null});
+    var response = await axios.post("https://api.happyland.finance/api/b2/getDataPlantCare",{landId: landId, seedId: null});
     if(response.status == 200){
         //102 trong 105 thu hoach 104 tuoi nuoc
         console.log("success "+landId);
@@ -113,10 +113,12 @@ async function collectAgricultural(productType){
 }
 //danh sách hạt giống trong kho
 async function getListSeed(){
-    var response = await axios.post("b1/getListPlantSeeds",{});
-    if(response.errorCode === 0){
+    console.log("getListSeed")
+    var response = await axios.post("https://api.happyland.finance/api/b1/getListPlantSeeds");
+    console.log("data nè ",response.data)
+    if(response.data.errorCode === 0){
         return response.data;
-    }else{
+    } else{
         return [];
     }
 }
@@ -192,7 +194,7 @@ async function buyAnimal(params){
 }
 //trồng cây
 async function plantTree(landId , seedId) {
-    var response = await axios.post("b2/getDataPlantCare",{landId: landId, seedId: seedId});
+    var response = await axios.post("https://api.happyland.finance/api/b2/getDataPlantCare",{landId: landId, seedId: seedId});
     if(response.status == 200){
         //102 trong 105 thu hoach 104 tuoi nuoc
         console.log("success "+landId);
@@ -221,6 +223,7 @@ async function sellAll(id, quantity) {
         console.log("error "+landId);
     }
 }
+delay = ms => new Promise(res => setTimeout(res, ms));
 async function main() {
     const login = await axios.post('https://api.happyland.finance/api/b1/login', {msisdn: userInfor.name, password: userInfor.pass})
 
@@ -233,10 +236,56 @@ async function main() {
         config.headers.Authorization = `Bearer ${userInfor.getToken}`;
         return config;
     });
+    while (true) {
+        const playerInfor = await axios.post('https://api.happyland.finance/api/b1/getPlayerInfo') 
+        playerInformation.setObj = playerInfor.data
+        
+        // array miếng đất lớn
+        let lands = playerInformation.getObj.data.Farm.land
 
-    const playerInfor = await axios.post('https://api.happyland.finance/api/b1/getPlayerInfo') 
-    playerInformation.setObj = playerInfor.data
-    console.log(playerInformation)
+        for(let i = 0 ; i < lands.length ;i++) {
+            // array miếng đất nhỏ trong 1 miếng đất lớn
+            let arrLand = lands[i].data
+            for(let k = 0 ; k < arrLand.length ; k++) {
+                let land = arrLand[k]
+                if(land.tree != null) {
+                    const timeNow = new Date().getTime()
+                    // tưới cây
+                    if(land.tree.isWater == true) {
+                        console.log("chuẩn bị tưới cây")
+                        await harvestPlan(land.id, null)
+                        console.log("tưới cây xong")
+                    }   
+                    // bắt sâu 
+                    if(land.tree.isWorm == true) {
+                        console.log("chuẩn bị bắt sâu")
+                        await harvestPlan(land.id, null)
+                        console.log("bắt sâu xong")
+                    }
+                    // thu hoạch
+                    if(land.tree.growthAt <= timeNow) {
+                        console.log("chuẩn bị thu hoạch")
+                        await harvestPlan(land.id, null)
+                        console.log("thu hoạch xong")
+                    }
+                } else {
+                    //lấy hết tất cả cây đang có
+                    let trees = await getListSeed()
+                    //check xem coi còn cấy nào không
+                    if(trees.data.length > 0) {
+                        var treeId = trees.data[0].id
+                        //trồng cây
+                        console.log("chuẩn bị trồng cây")
+                        await plantTree(land.id, treeId)
+                        console.log("trồng cây xong")
+                    }
+
+                }
+            }
+        }
+        await delay(10000)
+    }
+    
     
     
 }
