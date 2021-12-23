@@ -102,7 +102,7 @@ async function careAnimal(animalType,animalId){
 }
 //thu hoạch nông sản (trứng gà, trứng vịt)
 async function collectAgricultural(productType){
-    var response = await axios.post("b2/collectAgricultural",{productType: productType});
+    var response = await axios.post("https://api.happyland.finance/api/b2/collectAgricultural",{productType: productType});
     if(response.data){
         //102 trong 105 thu hoach 104 tuoi nuoc
         console.log("Thu hoach vat nuoi"+productType);
@@ -113,9 +113,7 @@ async function collectAgricultural(productType){
 }
 //danh sách hạt giống trong kho
 async function getListSeed(){
-    console.log("getListSeed")
     var response = await axios.post("https://api.happyland.finance/api/b1/getListPlantSeeds");
-    console.log("data nè ",response.data)
     if(response.data.errorCode === 0){
         return response.data;
     } else{
@@ -249,6 +247,7 @@ async function main() {
             for(let k = 0 ; k < arrLand.length ; k++) {
                 let land = arrLand[k]
                 if(land.tree != null) {
+                    console.log("có cay")
                     const timeNow = new Date().getTime()
                     // tưới cây
                     if(land.tree.isWater == true) {
@@ -269,6 +268,7 @@ async function main() {
                         console.log("thu hoạch xong")
                     }
                 } else {
+                    console.log("trồng cây") 
                     //lấy hết tất cả cây đang có
                     let trees = await getListSeed()
                     //check xem coi còn cấy nào không
@@ -283,6 +283,23 @@ async function main() {
                 }
             }
         }
+        // thu hoạch 
+        let harvest = playerInformation.getObj.data.CattleFarm
+        let harvestChickenEggs = harvest.harvestChickenEggs.count
+        let harvestDuckEggs = harvest.harvestDuckEggs.count
+
+        if(harvestChickenEggs > 0) {
+            console.log("chuẩn bị thu hoạc trứng gà")
+            await collectAgricultural('harvestChickenEggs')
+            console.log("thu hoạch trứng gà xong")
+        }
+
+        if(harvestDuckEggs > 0) {
+            console.log("chuẩn bị thu hoạc trứng vịt")
+            await collectAgricultural('harvestDuckEggs')
+            console.log("thu hoạch trứng vịt xong")
+        }
+
         await delay(10000)
     }
     
